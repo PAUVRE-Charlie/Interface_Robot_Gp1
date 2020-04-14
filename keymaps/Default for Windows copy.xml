@@ -1,0 +1,13 @@
+<keymap version="1" name="Default for Windows copy" parent="$default">
+  <action id="CommentByBlockComment">
+    <keyboard-shortcut first-keystroke="ctrl r" />
+  </action>
+  <action id="CommentByLineComment">
+    <keyboard-shortcut first-keystroke="ctrl r" />
+  </action>
+  <action id="FindMenuGroup">
+    <keyboard-shortcut first-keystroke="shift ctrl x" />
+    <keyboard-shortcut first-keystroke="ctrl colon" />
+  </action>
+  <action id="Replace" />
+</keymap>
