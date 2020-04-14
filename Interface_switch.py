@@ -14,10 +14,10 @@ class Trajectoire(object):
 
         self.c.bind("<Button-1>", func=self.draw)
 
-        self.line_button = Button(self.root, text='line', command=lambda : self.change_method(nb=0))
+        self.line_button = Button(self.root, text='line', command=lambda: self.change_method(nb=0))
         self.line_button.grid(row=0, column=0)
 
-        self.arc_button = Button(self.root, text='rectangle', command=lambda : self.change_method(nb=1))
+        self.arc_button = Button(self.root, text='rectangle', command=lambda: self.change_method(nb=1))
         self.arc_button.grid(row=0, column=1)
 
         self.coord_button = Button(self.root, text='cord', command=self.print_coord)
@@ -32,26 +32,16 @@ class Trajectoire(object):
         self.add_coord(event)
 
     def draw_method(self, event):
-        if self.DRAW_METHOD == 0: # Create line
+        if self.DRAW_METHOD == 0:  # Create line
             self.c.create_line(self.Coordinates[-1][0], self.Coordinates[-1][1], event.x, event.y)
-        elif self.DRAW_METHOD == 1 : # Create Rectangle
+        elif self.DRAW_METHOD == 1:  # Create Rectangle
             x0, y0 = self.Coordinates[-1][0], self.Coordinates[-1][1]
             x1, y1 = event.x, event.y
-            self.c.create_rectangle(x0,y0,x1,y1)
+            self.c.create_rectangle(x0, y0, x1, y1)
 
     def change_method(self, nb):
-        if nb<2:
-            self.DRAW_METHOD=nb
-
-    # def method(self, i):
-    #     switcher={
-    #         0:'Ligne',
-    #         1:'Rotation',
-    #         2:'Arc',
-    #         3:'Cercle',
-    #         4:'Carré'
-    #     }
-    #     return switcher.get(i,"Invalid method")
+        if nb < 2:
+            self.DRAW_METHOD = nb
 
     def add_coord(self, event):
         a = np.vstack((self.Coordinates, np.array([[event.x, event.y]])))
