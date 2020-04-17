@@ -1,0 +1,68 @@
+int pin1Motor = 5;
+int pin2Motor = 9;
+int pinPMotor = 6;
+int pinA = 2;
+int pinB = 3;
+
+int encoder_pos = 0;
+int previous_encoder_pos=0;
+int diff = 0;
+float pos_p = 0.;
+float temps = 0.;
+float temps_p = 0.;
+void setup()
+{
+  pinMode(pin1Motor, OUTPUT);
+  pinMode(pin2Motor, OUTPUT);
+  pinMode(pinPMotor, OUTPUT);
+  
+  pinMode(pinA,INPUT_PULLUP);
+  pinMode(pinB,INPUT_PULLUP);
+  //attachInterrupt(0,AChange,CHANGE);
+  attachInterrupt(1,BChange,CHANGE);
+ 
+  Serial.begin(9600);
+}
+
+void loop()
+{
+  int pourcentage = 100;
+  digitalWrite(pin1Motor, HIGH);
+  digitalWrite(pin2Motor, LOW);
+  analogWrite(pinPMotor, 255*pourcentage/100);
+  Serial.print("encoder_pos : ");
+  Serial.print(encoder_pos);
+  diff = encoder_pos-previous_encoder_pos;
+  if (-1<=diff<=0){
+    Serial.print("// Moteur à l'arrêt");
+  }
+  else if (diff>0){
+    Serial.print("// Tourne dans le sens anti-horaire");
+  }
+  else{
+    Serial.print("// Tourne dans le sens horaire");
+  }   
+  previous_encoder_pos = encoder_pos;
+  float pos = (float)encoder_pos*360/500/50*14.4; // en degrés
+  float nombre_tours = pos/360; 
+  Serial.print(" // "); 
+  Serial.print(pos);
+  Serial.print(" // "); 
+  Serial.print(nombre_tours);
+  temps=millis();
+  float vitesse = (pos-pos_p)/(temps-temps_p)*1000;
+  Serial.print(" // ");
+  Serial.println(vitesse);
+  temps_p =temps;
+  pos_p = pos;
+  delay(100);
+  
+}
+/*
+void AChange(){
+  encoder_pos += (digitalRead(pinA)==digitalRead(pinB))?1:-1;
+}
+*/
+void BChange(){
+  encoder_pos += (digitalRead(pinA)==digitalRead(pinB))?-1:1;
+}
