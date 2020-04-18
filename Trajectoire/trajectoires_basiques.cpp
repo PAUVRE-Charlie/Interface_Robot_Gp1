@@ -1,18 +1,18 @@
 const byte moteur_d = A1;
 const byte moteur_g = A2;
 
-const float e = 0; //Valeur à trouver
+const float e = 0; //Valeur ï¿½ trouver
 const float a_max = 0.5;//   en m/s^2
 const float v_max = 1.0; //  en m/s
 const float pi = 3.1416
 
-//Besoin de ces 3 infos pour se repérer dans l'espace de façon orientée
+//Besoin de ces 3 infos pour se repï¿½rer dans l'espace de faï¿½on orientï¿½e
 float x_veh;
 float y_veh;
 float angle_veh;
 
-//Coordonées du prochain point à atteindre
-//On pourrait aussi rajouter une orientation si on veut, à voir
+//Coordonï¿½es du prochain point ï¿½ atteindre
+//On pourrait aussi rajouter une orientation si on veut, ï¿½ voir
 float delta_x;
 float delta_y;
 
@@ -21,9 +21,9 @@ float vg;
 float vd;
 
 //Variables utiles pour plusieurs Headers
-int etat; //sert à effectuer chaque fonction sans inhiber le reste du programme tout en connaissant l'état actuel des actions menées
-unsigned long time; //sert à effectuer des chronos à chaque fois, à rafraichir dès qu'il ne sert plus
-int sens; //sert pour les différentiels entre les roues. 0=droite et 1=gauche
+int etat; //sert ï¿½ effectuer chaque fonction sans inhiber le reste du programme tout en connaissant l'ï¿½tat actuel des actions menï¿½es
+unsigned long time; //sert ï¿½ effectuer des chronos ï¿½ chaque fois, ï¿½ rafraichir dï¿½s qu'il ne sert plus
+int sens; //sert pour les diffï¿½rentiels entre les roues. 0=droite et 1=gauche
 
 #include "demi_cercle.h"
 #include "pivot.h"
@@ -44,7 +44,7 @@ void setup() {
 }
 
 void loop() {
-    //PARTIE LECTURE où Aziz et Guillaume envoient x_cons, y-cons et theta_cons
+    //PARTIE LECTURE oï¿½ Aziz et Guillaume envoient x_cons, y-cons et theta_cons
     //Si theta = 0, on en conclut que c'est un ligne droite ou un demi cercle, sinon c'est un pivot d'angle theta
 
     if (theta != 0) {
