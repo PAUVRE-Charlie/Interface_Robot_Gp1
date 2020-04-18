@@ -9,7 +9,7 @@ class Trajectoire(object):
     def __init__(self):
         self.root = Tk()
 
-        self.Coordinates = np.array([[self.CANVAS_SIZE[0] // 2, self.CANVAS_SIZE[1] // 2]])
+        self.Coordinates = np.array([[None, self.CANVAS_SIZE[0] // 2, self.CANVAS_SIZE[1] // 2]])
         self.c = Canvas(self.root, height=self.CANVAS_SIZE[0], width=self.CANVAS_SIZE[1], bg="white")
 
         self.c.bind("<Button-1>", func=self.draw)
@@ -23,7 +23,10 @@ class Trajectoire(object):
         self.coord_button = Button(self.root, text='cord', command=self.print_coord)
         self.coord_button.grid(row=0, column=2)
 
-        self.c.grid(row=1, columnspan=3)
+        self.cons_button = Button(self.root, text='consigne', command=self.conv_cord)
+        self.cons_button.grid(row=0, column=3)
+
+        self.c.grid(row=1, columnspan=4)
         self.root.mainloop()
 
     def draw(self, event):
@@ -32,11 +35,11 @@ class Trajectoire(object):
         self.add_coord(event)
 
     def draw_method(self, event):
+        x0, y0 = self.Coordinates[-1][1], self.Coordinates[-1][2]
+        x1, y1 = event.x, event.y
         if self.DRAW_METHOD == 0:  # Create line
-            self.c.create_line(self.Coordinates[-1][0], self.Coordinates[-1][1], event.x, event.y)
+            self.c.create_line(x0, y0, x1, y1)
         elif self.DRAW_METHOD == 1:  # Create Arc
-            x0, y0 = self.Coordinates[-1][0], self.Coordinates[-1][1]
-            x1, y1 = event.x, event.y
             self._create_arc((x0, y0), (x1, y1))
 
     def _create_arc(self, p0, p1):
@@ -58,11 +61,23 @@ class Trajectoire(object):
             self.DRAW_METHOD = nb
 
     def add_coord(self, event):
-        a = np.vstack((self.Coordinates, np.array([[event.x, event.y]])))
+        a = np.vstack((self.Coordinates, np.array([[self.DRAW_METHOD, event.x, event.y]])))
         self.Coordinates = a
+
+    def conv_cord(self):
+        data = []
+        for i in range(len(self.Coordinates)):
+            d, x, y = self.Coordinates[i]
+            x_clas, y_clas = x, self.CANVAS_SIZE[1]-y
+            data.append([d, (x_clas, y_clas)])
+        print(data)
 
     def print_coord(self):
         print(self.Coordinates)
+
+
+
+
 
 
 if __name__ == '__main__':
