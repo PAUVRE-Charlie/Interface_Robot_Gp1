@@ -1,39 +1,32 @@
 #ifndef __DEMI_CERCLE_H__
 #define __DEMI_CERCLE_H__
 
-float lambda_dc; //rapport ‡ conserver pour effectuer un demi-cercle
+float lambda_dc; //rapport √† conserver pour effectuer un demi-cercle
 float v_dc;      //vitesse de la roue interieur
-float diametre;
 
 float dg_dc;//Distance entre la roue gauche et la consigne
-float dd_dc;//Distance entre la roue droite et la consigne, en soit inutile, une seule suffit, mais si jamais on en a besoin ‡ un moment elle est l‡
+float dd_dc;//Distance entre la roue droite et la consigne, en soit inutile, une seule suffit, mais si jamais on en a besoin √† un moment elle est l√†
 
-unsigned long delta_acc;
-unsigned long delta_plat;
-
-int demi_cercle(float x, float y, float angle, float x_consigne, float y_consigne, float *vg, float *vd, float *sens) {
+int demi_cercle(float diametre, float *vg, float *vd) {
 
 	switch (etat) {
 
 		//INITIALISATION
 		case 0: {
-			delta_x = x_consigne - x;
-			delta_y = y_consigne - y;
-			diametre = sqrt(delta_x * delta_x + delta_y * delta_y)/2;
+
+			if (diametre < 0) {
+				diametre = abs(diametre);
+				sens = 0; //vers la droite
+			}
+
+			else {
+				sens = 1; //vers la gauche
+			}
+
 			lambda_dc = (diametre + e) / (diametre - e);
 
-			dg_dc = sqrt((x - cos(angle) * e - x_consigne) * (x - cos(angle) * e - x_consigne) + (y + sin(angle) * e - y_consigne) * (y + sin(angle) * e - y_consigne));
-			
-			if (dg_dc < diametre) { //On tourne ‡ gauche
-				sens = 1;
-			}
-			else {                  //On tourne ‡ droite
-				sens = 0;
-			}
-
-
 			if (diametre >= 2 * (v_max * v_max) / (lambda_dc * lambda_dc * pi * a_max) + e) {
-				// Il y a un plateau, on calcul ‡ l'avance les delta_t dont on aura besoin
+				// Il y a un plateau, on calcul √† l'avance les delta_t dont on aura besoin
 				delta_acc = v_max / (lambda_dc * a_max)*1000; 
 				delta_plat = ((diametre - e) * pi * lambda_dc / (2 * v_max) - v_max / (lambda_dc * a_max))*1000;
 				etat = 1;
@@ -128,24 +121,6 @@ int demi_cercle(float x, float y, float angle, float x_consigne, float y_consign
 
 	return etat;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 #endif
 
