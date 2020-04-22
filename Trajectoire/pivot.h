@@ -6,12 +6,12 @@ float t_rot;
 float v_p;
 
 
-//On va effectuer une rotation ultra smooth, accel max divisée par 2
-//Dans ce cas, même dans le pire des cas, un demi-tour, la vitesse maximale au niveau d'une roue serait de 0.4 m/s
+//On va effectuer une rotation ultra smooth, accel max divisÃ©e par 2
+//Dans ce cas, mÃªme dans le pire des cas, un demi-tour, la vitesse maximale au niveau d'une roue serait de 0.4 m/s
 // On va toujours partir du prncipe qu'on en va pas atteindre un plateau donc
 
 
-int pivot(float *theta, float *vg, float *vd) {
+int pivot(float theta, float *vg, float *vd) {
     
     switch (etat) {
 
@@ -41,7 +41,7 @@ int pivot(float *theta, float *vg, float *vd) {
             break;
         }
 
-        case 2: {//Phase de décélération
+        case 2: {//Phase de dÃ©cÃ©lÃ©ration
             if (millis() >= time + t_rot / 2) {
                 time = millis();
                 etat = 0;
@@ -56,12 +56,12 @@ int pivot(float *theta, float *vg, float *vd) {
 
     }
 
-    if (sens == 0) { //on tourne à droite
+    if (sens == 0) { //on tourne Ã  droite
         vd = 127 - 127 * v_p / v_max);
         vg = 127 + 127 * v_p / v_max);
     }
 
-    else { //on tourne à gauche
+    else { //on tourne Ã  gauche
         vd = 127 - 127 * v_p / v_max);
         vg = 127 + 127 * v_p / v_max);
     }
@@ -70,3 +70,4 @@ int pivot(float *theta, float *vg, float *vd) {
 }
 
 #endif
+
