@@ -83,7 +83,8 @@ void loop() {
     pid(vg_mes, vd_mes, &vg, &vd, elapsedTime);
     previousTime = currentTime;                        
     
-    
+    vg = constrain(vg, 0, 255);
+    vd = constrain(vd, 0, 255);
                                                        
     
     //PARTIE ECRITURE
