@@ -62,8 +62,8 @@ float output_d, output_g;
 #include "pivot.h"
 #include "ligne_droite.h"
 #include "pid.h"
-#include "b1_change.h"
-#include "b2_change.h"
+#include "b1change.h"
+#include "b2change.h"
 
 void setup() {
     etat = 0;
@@ -84,7 +84,7 @@ void setup() {
   
     pinMode(pin1A,INPUT_PULLUP);
     pinMode(pin1B,INPUT_PULLUP);
-    attachInterrupt(1,B1Change,CHANGE);
+    attachInterrupt(1,b1change(&encoder_pos1),CHANGE);
   
   //Moteur2
     pinMode(pin1Motor2, OUTPUT);
@@ -95,7 +95,7 @@ void setup() {
     pinMode(pin2A,INPUT_PULLUP);
     pinMode(pin2B,INPUT_PULLUP);
   
-    attachInterrupt(0,B2Change,CHANGE);
+    attachInterrupt(0,b2change(&encoder_pos2),CHANGE);
     
     Serial.begin(9600);
 }
