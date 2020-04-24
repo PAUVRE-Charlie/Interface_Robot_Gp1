@@ -3,6 +3,8 @@ import numpy as np
 import math
 import tkinter
 import os
+import matplotlib.patches as mpatches
+
 
 from matplotlib.backends.backend_tkagg import (
     FigureCanvasTkAgg, NavigationToolbar2Tk)
@@ -52,10 +54,11 @@ class Interface():
 
     def set_buttons(self):
         """Mise en place des boutons sur Tkinter"""
-        self.method_entry = tkinter.Entry(self.root)
-        self.method_entry.pack(side=tkinter.TOP)
+        # self.method_entry = tkinter.Entry(self.root)
+        # self.method_entry.pack(side=tkinter.TOP)
+        # TODO add entry for ROT
 
-        self.update_methodbutton = tkinter.Button(master=self.root, text="Update", command=self.update_method)
+        self.update_methodbutton = tkinter.Button(master=self.root, text="Update", command=lambda: self.change_method(nb=2))
         self.update_methodbutton.pack(side = tkinter.TOP)
 
         self.command_button = tkinter.Button(master=self.root, text="Command", command=self.print_command)
@@ -71,6 +74,10 @@ class Interface():
         """Tempoiraire, c'est pour mettre à jour la méthode de tracé, ici 1 est la ligne droite"""
         self.DRAW_METHOD = self.method_entry.get()
         print(self.DRAW_METHOD)
+
+    def change_method(self, nb):
+        if nb < 3:
+            self.DRAW_METHOD = nb
 
     def on_key_press(self, event):
         """Gestion de l'évènement clic gauche et gestion du tracé"""
@@ -90,6 +97,12 @@ class Interface():
             if angle!=0: # Ajoute une commande de rotation s'il est non nul
                 self.command = np.vstack((self.command, np.array([0,angle]))) # Rotation
             self.command = np.vstack((self.command, np.array([1,np.linalg.norm(dv)]))) # Ligne Droite
+        if self.DRAW_METHOD==2: # demi-tour
+            # add a circle to show rotation
+            circle = mpatches.Circle(xy=self.plt_draw[-1],radius=0.01,color='b',fill=False)
+            self.ax.add_artist(circle)
+            # TODO add new direction
+            # TODO add command (0,pi)
 
 
         # Update Canvas
