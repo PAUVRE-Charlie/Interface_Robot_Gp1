@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import math
 import tkinter
+import os
 
 from matplotlib.backends.backend_tkagg import (
     FigureCanvasTkAgg, NavigationToolbar2Tk)
@@ -60,6 +61,9 @@ class Interface():
         self.command_button = tkinter.Button(master=self.root, text="Command", command=self.print_command)
         self.command_button.pack(side = tkinter.TOP)
 
+        self.export_button = tkinter.Button(master=self.root, text="Export", command=self.command_txt)
+        self.export_button.pack(side = tkinter.TOP)
+
         self.quit_button = tkinter.Button(master=self.root, text="Quit", command=self._quit)
         self.quit_button.pack(side=tkinter.BOTTOM)
 
@@ -106,6 +110,15 @@ class Interface():
     def print_command(self):
         """Imprime les commandes sur la console"""
         print(self.command)
+
+    def command_txt(self):
+        path = os.getcwd()
+        text_data = open(path+"\\trajectoire.txt", "w")
+        for instruct in self.command:
+            txt = "{0} {1};".format(int(instruct[0]),instruct[1])
+            text_data.write(txt)
+        text_data.close()
+        return 0
 
     def _quit(self):
         self.root.quit()     # stops mainloop
