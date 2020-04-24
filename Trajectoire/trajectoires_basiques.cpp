@@ -131,7 +131,7 @@ void loop() {
   Serial.println(vitesse_mot2);
   pos_p2 = pos2; 
     
-  float vitesse_rotation_robot = (vitesse_mot2-vitesse_mot1)/e;
+  float vitesse_rotation_robot = (vitesse_mot1-vitesse_mot2)/e; // si le moteur1 tourne plus vite que le moteur 2 alors on tourne vers la gauche (sens défini comme étant positif)
   angle_veh = angle_veh + vitesse_rotation_robot*(temps2-temps_p2);
   
   temps_p2 =temps2;   
