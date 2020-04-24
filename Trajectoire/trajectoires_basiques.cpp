@@ -4,6 +4,9 @@ const float v_max = 1.0; //  en m/s
 const float pi = 3.1416;
 const float R = 0.05; // à savoir en m 
 
+//Lecture consignes PC
+byte rx = 1;
+
 //Moteur 1
 const int pin1Motor1 = 5;
 const int pin2Motor1 = 9;
@@ -42,7 +45,7 @@ float vd;
 float vd_mes;
 float vg_mes;
 
-//Compteur pour lire les instructions de l'odri une par une
+//Compteur pour lire les instructions de l'ordi une par une
 int compteur;
 
 
@@ -56,7 +59,6 @@ unsigned long delta_plat;
 //Pour les PID
 unsigned long currentTime, previousTime;
 double elapsedTime;
-float output_d, output_g;
 
 #include "demi_cercle.h"
 #include "pivot.h"
