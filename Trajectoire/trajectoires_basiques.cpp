@@ -37,6 +37,11 @@ double elapsedTime;
 #include "ligne_droite.h"
 #include "pid.h"
 
+//Pour la lecture de fichier texte
+using System;
+using System.IO;
+using System.Text;
+
 void setup() {
     etat = 0;
     compteur = 0;
@@ -49,6 +54,12 @@ void setup() {
     previousTime = millis();
     
     Serial.begin(9600);
+	
+    string path_read = @"C:\sahquelplaisir.txt";
+    string path_write = @"C:\sahalors.txt";
+	
+    string readText = File.ReadAllText(path_read);
+    File.AppendAllText(path_write, readText);
 }
 
 void loop() {
