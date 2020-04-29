@@ -58,6 +58,13 @@ void setup() {
     string path_read = @"C:\sahquelplaisir.txt";
     string path_write = @"C:\sahalors.txt";
 	
+    //copier ligne par ligne
+    string[] lines = System.IO.File.ReadAllLines(path_read);
+
+    foreach (string line in lines) {
+            File.AppendAllText(path_write, "\t" + line);
+        			   }
+    //copier tout d'un coup
     string readText = File.ReadAllText(path_read);
     File.AppendAllText(path_write, readText);
 }
