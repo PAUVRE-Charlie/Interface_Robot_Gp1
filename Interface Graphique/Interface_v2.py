@@ -28,8 +28,8 @@ class Interface():
         # Variables
         self.plt_draw = np.zeros((1,2)) # Coordonnées interprété par matplotlib pour le tracé
         self.plt_draw[0] = np.array([0,1])
-        self.command = np.zeros((1,2))
-        self.command[0] = np.array([1,1])
+        self.command = np.zeros((1,3))
+        self.command[0] = np.array([1, 0,1])
         self.directions = np.array([[0,1]])
 
         self.setup()
@@ -57,6 +57,16 @@ class Interface():
         # self.method_entry = tkinter.Entry(self.root)
         # self.method_entry.pack(side=tkinter.TOP)
         # TODO add entry for ROT
+
+        # TODO add entry for x, y
+        self.xcirentry = tkinter.Entry(self.root)
+        self.xcirentry.pack(side=tkinter.TOP)
+
+        self.ycirentry = tkinter.Entry(self.root)
+        self.ycirentry.pack(side=tkinter.TOP)
+
+        self.update_cirbutton = tkinter.Button(master=self.root, text="CIR", command=self.CIR)
+        self.update_cirbutton.pack(side = tkinter.TOP)
 
         self.update_methodbutton = tkinter.Button(master=self.root, text="Update", command=lambda: self.change_method(nb=2))
         self.update_methodbutton.pack(side = tkinter.TOP)
@@ -86,6 +96,7 @@ class Interface():
 
         if self.DRAW_METHOD==1: # Ligne droite
             x, y = event.xdata, event.ydata
+            if event.inaxes!=self.ax.axes: return
             dv = x-self.plt_draw[-1][0] , y-self.plt_draw[-1][1]
             angle = self.get_ang(self.plt_draw[-1], np.array([x,y]), dir=True, direction=self.directions[-1]) # Détermination de l'angle de rotation (valeur absolue)
             self.directions = np.vstack((self.directions, np.array(dv / np.linalg.norm(dv)))) # Mise à jour des directions deu robot
@@ -95,14 +106,9 @@ class Interface():
                 angle = -angle
             # Ajout des commandes
             if angle!=0: # Ajoute une commande de rotation s'il est non nul
-                self.command = np.vstack((self.command, np.array([0,angle]))) # Rotation
-            self.command = np.vstack((self.command, np.array([1,np.linalg.norm(dv)]))) # Ligne Droite
-        if self.DRAW_METHOD==2: # demi-tour
-            # add a circle to show rotation
-            circle = mpatches.Circle(xy=self.plt_draw[-1],radius=0.01,color='b',fill=False)
-            self.ax.add_artist(circle)
-            # TODO add new direction
-            # TODO add command (0,pi)
+                self.command = np.vstack((self.command, np.array([0,angle,0]))) # Rotation
+            # self.command = np.vstack((self.command, np.array([1,np.linalg.norm(dv), ]))) # Ligne Droite
+            self.command = np.vstack((self.command, np.array([1,x, y])))
 
 
         # Update Canvas
@@ -119,6 +125,21 @@ class Interface():
         v2_unit = vect2 / np.linalg.norm(vect2)
         dot_product = np.dot(v1_unit, v2_unit)
         return np.arccos(dot_product)
+
+    def CIR(self):
+        print(self.plt_draw[-1][0], self.plt_draw[-1][1], self.xcirentry.get(), self.ycirentry.get())
+        self.draw_CIR(self.plt_draw[-1][0], self.plt_draw[-1][1], self.xcirentry.get(), self.ycirentry.get())
+        self.command = np.vstack((self.command, np.array([2, self.xcirentry.get(), self.ycirentry.get()])))
+
+
+    def draw_CIR(self, xin, yin, xout, yout, ang=np.pi/2):
+        print(xin, yin, xout, yout)
+        r = np.abs(yin-yout)
+        X = np.linspace(xin, xout, 1000)
+        Y = yout + np.sqrt(r**2 - (X-xin)**2)
+        for k in range(len(X)):
+            self.plt_draw = np.vstack((self.plt_draw, np.array([X[k],Y[k]])))
+        self.ax.figure.canvas.draw()
 
     def print_command(self):
         """Imprime les commandes sur la console"""
