@@ -23,18 +23,18 @@ int ligne_droite(float distance, float* vg, float* vd)
 			sens = 1; //marche avant
 		}
 
-		if (distance / (2*v_max) > v_max / a_max)
+		if (distance / v_max > v_max / a_max)
 		{
-			// Il y a un plateau, on calcul à l'avance les delta_t dont on aura besoin
+			// Il y a un plateau, on calcul Å• l'avance les delta_t dont on aura besoin
 			delta_acc = v_max / a_max * 1000;
-			delta_plat = (distance - 2 * v_max * delta_acc) / v_max * 1000;
+			delta_plat = (distance /v_max)*1000 - delta_acc; //(
 			etat = 1;
 		}
 
 		else
 		{
 			//Il n'y a pas de plateau
-			delta_acc = (sqrt(2*distance / a_max)) * 1000;
+			delta_acc = (sqrt(distance / a_max)) * 1000;
 			etat = 4;
 		}
 
@@ -110,7 +110,7 @@ int ligne_droite(float distance, float* vg, float* vd)
 	{
 		if (millis() - time < delta_acc)
 		{
-			v_ld = sqrt(a_max * distance / 2) - a_max * (millis() - time) / 1000;
+			v_ld = sqrt(a_max * distance) - a_max * (millis() - time) / 1000;
 		}
 		else
 		{
