@@ -55,18 +55,12 @@ void setup() {
     
     Serial.begin(9600);
 	
-    string path_read = @"C:\sahquelplaisir.txt";
-    string path_write = @"C:\sahalors.txt";
+    string path_read = @"C:\sahquelplaisir.txt"; //texte avec les valeurs à lire
+    string path_write = @"C:\sahalors.txt";	 //texte avec les valeurs à écrire
 	
-    //copier ligne par ligne
-    string[] lines = System.IO.File.ReadAllLines(path_read);
-
-    foreach (string line in lines) {
-            File.AppendAllText(path_write, "\t" + line);
-        			   }
-    //copier tout d'un coup
-    string readText = File.ReadAllText(path_read);
-    File.AppendAllText(path_write, readText);
+    string[] lines = System.IO.File.ReadAllLines(path_write); //tableau copiant les valeurs de l'interface graphique
+    int i = 0;
+    
 }
 
 void loop() {
@@ -74,21 +68,33 @@ void loop() {
     //PARTIE LECTURE
       //Lire tableau si etat = 0
       //Update les valeur de x_veh, y_veh et angle_veh
-      
+     if (etat == 0) {
+	    
+	if (i != lines.Length) { 
+	    string line = lines[i]; //on prend la nouvelle ligne
+            int id = (int)line[0]; 
+	    float o1 = (float)line.Substring(line.IndexOf(";")+1, line.LastIndexOf(";") - 2);
+            float o2 = (float)line.Substring(line.LastIndexOf(";")+1));
+	    i++;    //ligne suivante
+        }
+
+                    
+     }
+	     
 	
 	
     //PARTIE CALCUL
     
     if (id == 0) {
-        etat = pivot(o, &vg, &vd);
+        etat = pivot(o1, &vg, &vd);
     }
 
     else if (id == 1) {
-        etat = ligne_droite(o, &vg, &vd);
+        etat = ligne_droite(o1, &vg, &vd);
     }
 
     else {
-        etat = demi_cercle(o, &vg, &vd);
+        etat = demi_cercle(o1, o2, &vg, &vd);
     }
     
     
