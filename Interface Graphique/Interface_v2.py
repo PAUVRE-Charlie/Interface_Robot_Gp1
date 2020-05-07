@@ -199,7 +199,7 @@ class Interface():
         path = os.getcwd()
         text_data = open(path + "\\trajectoire.txt", "w")
         for instruct in self.command:
-            txt = "{0} {1};\n".format(int(instruct[0]), instruct[1])
+            txt = "{0};{1};{2}\n".format(int(instruct[0]), round(instruct[1],3), round(instruct[2], 3))
             text_data.write(txt)
         text_data.close()
         return 0
