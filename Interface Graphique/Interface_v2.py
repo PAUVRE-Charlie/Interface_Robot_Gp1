@@ -77,16 +77,18 @@ class Interface():
 
     def set_buttons(self):
         """Mise en place des boutons sur Tkinter"""
-        # self.method_entry = tkinter.Entry(self.root)
-        # self.method_entry.pack(side=tkinter.TOP)
-        # TODO Create new window to add entries by hand
-        self.window_button= tkinter.Button(self.root, text="Window", command=self.create_window)
+
+        # Create new window to add entries by hand
+        self.window_button= tkinter.Button(self.root, text="Command Window", command=self.create_window)
         self.window_button.pack(side=tkinter.LEFT)
-        # TODO add entry for ROT
 
         self.update_methodbutton = tkinter.Button(master=self.root, text="Update",
                                                   command=self.change_method)
         self.update_methodbutton.pack(side=tkinter.LEFT)
+
+        self.erase_methodbutton = tkinter.Button(master=self.root, text="Erase",
+                                                  command=self.erase_plt)
+        self.erase_methodbutton.pack(side=tkinter.LEFT)
 
         self.command_button = tkinter.Button(master=self.root, text="Command", command=self.print_command)
         self.command_button.pack(side=tkinter.LEFT)
@@ -99,8 +101,18 @@ class Interface():
 
     def update_method(self):
         """Tempoiraire, c'est pour mettre à jour la méthode de tracé, ici 1 est la ligne droite"""
-        self.DRAW_METHOD = self.method_entry.get()
+        self.DRAW_METHOD = 10
         print(self.DRAW_METHOD)
+
+    def erase_plt(self):
+        self.plt_draw = np.zeros((1, 2))  # Coordonnées interprété par matplotlib pour le tracé
+        self.plt_draw[0] = np.array([0, 1])
+        self.command = np.zeros((1, 3))
+        self.command[0] = np.array([1, 0, 1])
+        self.directions = np.array([[0, 1]])
+        self.drawing.set_data(self.plt_draw[:, 0], self.plt_draw[:, 1])
+        self.ax.figure.canvas.draw()
+
 
     def change_method(self):
         if self.DRAW_METHOD < 3:
@@ -117,7 +129,7 @@ class Interface():
         if self.DRAW_METHOD == 1:  # Ligne droite
             self.draw_lineinter(x, y)
         if self.DRAW_METHOD == 2:  # CIR
-            self.draw_CIR(self.plt_draw[-1][0], self.plt_draw[-1][1], x, y)
+            self.draw_CIR(10, self.plt_draw[-1][0], self.plt_draw[-1][1], x, y)
             self.command = np.vstack((self.command, np.array([2, x, y])))
         # Update Canvas
         self.drawing.set_data(self.plt_draw[:, 0], self.plt_draw[:, 1])
@@ -125,14 +137,27 @@ class Interface():
 
     def create_window(self):
         self.window = tkinter.Toplevel(self.root)
-        tkinter.Label(self.window, text ="CIR").grid(row=0, column=0)
+        self.set_windowbutton()
+
+    def set_windowbutton(self):
+        col=0
+        tkinter.Label(self.window, text ="CIR (r, x, y): ").grid(row=0, column=col)
+        col+=1
+        self.rcirentry = tkinter.Entry(self.window)
+        self.rcirentry.grid(row=0, column = col)
+        col+=1
+        tkinter.Label(self.window, text =", ").grid(row=0, column=col)
+        col+=1
         self.xcirentry = tkinter.Entry(self.window)
-        self.xcirentry.grid(row=0, column = 1)
-        tkinter.Label(self.window, text =", ").grid(row=0, column=2)
+        self.xcirentry.grid(row=0, column = col)
+        col+=1
+        tkinter.Label(self.window, text =", ").grid(row=0, column=col)
+        col+=1
         self.ycirentry = tkinter.Entry(self.window)
-        self.ycirentry.grid(row=0, column=3)
+        self.ycirentry.grid(row=0, column=col)
+        col+=1
         self.update_cirbutton = tkinter.Button(master=self.window, text="CIR", command=self.CIR)
-        self.update_cirbutton.grid(row = 0, column = 4)
+        self.update_cirbutton.grid(row = 0, column = col)
 
 
     def get_ang(self, v1, v2, dir=False, direction=(0, 1)):
@@ -148,7 +173,7 @@ class Interface():
 
     def CIR(self):
         print(self.plt_draw[-1][0], self.plt_draw[-1][1], self.xcirentry.get(), self.ycirentry.get())
-        self.draw_CIR(self.plt_draw[-1][0], self.plt_draw[-1][1], self.xcirentry.get(), self.ycirentry.get())
+        self.draw_CIR(float(self.rcirentry.get()), self.plt_draw[-1][0], self.plt_draw[-1][1], float(self.xcirentry.get()), float(self.ycirentry.get()))
         self.command = np.vstack((self.command, np.array([2, self.xcirentry.get(), self.ycirentry.get()])))
 
     def draw_lineinter(self, x,y):
@@ -168,15 +193,16 @@ class Interface():
         # self.command = np.vstack((self.command, np.array([1,np.linalg.norm(dv), ]))) # Ligne Droite
         self.command = np.vstack((self.command, np.array([1, x, y])))
 
-    def draw_CIR(self, xin, yin, xout, yout, ang=np.pi / 2):
+    def draw_CIR(self,rin,  xin, yin, xout, yout, ang=np.pi / 2):
         print(xin, yin, xout, yout)
-        r = np.abs(yin - yout)
+        # r = np.abs(yin - rin)
         X = np.linspace(xin, xout, 1000)
-        Y = yout + np.sqrt(r ** 2 - (X - xin) ** 2)
+        Y = yin-rin + np.sqrt(rin ** 2 - (X - xin) ** 2)
         for k in range(len(X)):
             if isinstance(X[k], float) and isinstance(Y[k], float):
                 self.plt_draw = np.vstack((self.plt_draw, np.array([X[k], Y[k]])))
         self.plt_draw = np.vstack((self.plt_draw, np.array([xout, yout])))
+        self.drawing.set_data(self.plt_draw[:, 0], self.plt_draw[:, 1])
         self.ax.figure.canvas.draw()
 
     def print_command(self):
