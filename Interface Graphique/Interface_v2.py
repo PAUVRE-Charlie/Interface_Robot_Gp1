@@ -139,26 +139,6 @@ class Interface():
         self.window = tkinter.Toplevel(self.root)
         self.set_windowbutton()
 
-    def set_windowbutton(self):
-        col=0
-        tkinter.Label(self.window, text ="CIR (r, x, y): ").grid(row=0, column=col)
-        col+=1
-        self.rcirentry = tkinter.Entry(self.window)
-        self.rcirentry.grid(row=0, column = col)
-        col+=1
-        tkinter.Label(self.window, text =", ").grid(row=0, column=col)
-        col+=1
-        self.xcirentry = tkinter.Entry(self.window)
-        self.xcirentry.grid(row=0, column = col)
-        col+=1
-        tkinter.Label(self.window, text =", ").grid(row=0, column=col)
-        col+=1
-        self.ycirentry = tkinter.Entry(self.window)
-        self.ycirentry.grid(row=0, column=col)
-        col+=1
-        self.update_cirbutton = tkinter.Button(master=self.window, text="CIR", command=self.CIR)
-        self.update_cirbutton.grid(row = 0, column = col)
-
 
     def get_ang(self, v1, v2, dir=False, direction=(0, 1)):
         """Détermine l'angle de rotation avec considération possible de la direction précédante"""
@@ -170,6 +150,12 @@ class Interface():
         v2_unit = vect2 / np.linalg.norm(vect2)
         dot_product = np.dot(v1_unit, v2_unit)
         return np.arccos(dot_product)
+
+    def ROT(self):
+        return 0
+
+    def LIN(self):
+        return 0
 
     def CIR(self):
         print(self.plt_draw[-1][0], self.plt_draw[-1][1], self.xcirentry.get(), self.ycirentry.get())
@@ -222,6 +208,43 @@ class Interface():
         self.root.quit()  # stops mainloop
         self.root.destroy()  # this is necessary on Windows to prevent
         # Fatal Python Error: PyEval_RestoreThread: NULL tstate
+
+    def set_windowbutton(self):
+        col=0
+        tkinter.Label(self.window, text ="CIR (r, x, y): ").grid(row=0, column=col)
+        col+=1
+        self.rcirentry = tkinter.Entry(self.window)
+        self.rcirentry.grid(row=0, column = col)
+        col+=1
+        tkinter.Label(self.window, text =", ").grid(row=0, column=col)
+        col+=1
+        self.xcirentry = tkinter.Entry(self.window)
+        self.xcirentry.grid(row=0, column = col)
+        col+=1
+        tkinter.Label(self.window, text =", ").grid(row=0, column=col)
+        col+=1
+        self.ycirentry = tkinter.Entry(self.window)
+        self.ycirentry.grid(row=0, column=col)
+        col+=1
+        self.update_cirbutton = tkinter.Button(master=self.window, text="CIR", command=self.CIR)
+        self.update_cirbutton.grid(row = 0, column = col)
+        colcir = col
+        col=0
+        tkinter.Label(self.window, text ="ROT (theta): ").grid(row=1, column=col)
+        col+=1
+        self.thetaentry = tkinter.Entry(self.window)
+        self.thetaentry.grid(row=1, column = col)
+        col+=1
+        self.update_rotbutton = tkinter.Button(master=self.window, text="ROT", command=self.ROT)
+        self.update_rotbutton.grid(row = 1, column = colcir)
+        col=0
+        tkinter.Label(self.window, text ="LIN (d): ").grid(row=2, column=col)
+        col+=1
+        self.dentry = tkinter.Entry(self.window)
+        self.dentry.grid(row=2, column = col)
+        col+=1
+        self.update_linbutton = tkinter.Button(master=self.window, text="LIN", command=self.LIN)
+        self.update_linbutton.grid(row = 2, column = colcir)
 
 
 Interface()
