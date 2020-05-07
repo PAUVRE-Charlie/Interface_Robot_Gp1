@@ -22,8 +22,19 @@ int ligne_droite(float distance, float* vg, float* vd)
 		else {
 			sens = 1; //marche avant
 		}
-
-		if (distance / v_max > v_max / a_max)
+		float T;
+		float tau;
+		float T1 = distance / v_max;
+		float tau1 = v_max / a_max;
+		float T2 = distance / w_max;
+		float tau2 = w_max / eps_max;
+		
+		if (T1 > T2) {T = T1;}
+		else {T = T2;}
+		if (tau1 > tau2) {tau = tau1;}
+		else {tau = tau2;}
+		
+		if (T > tau)
 		{
 			// Il y a un plateau, on calcul ŕ l'avance les delta_t dont on aura besoin
 			delta_acc = v_max / a_max * 1000;
