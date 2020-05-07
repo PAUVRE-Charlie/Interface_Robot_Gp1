@@ -81,28 +81,18 @@ class Interface():
         # self.method_entry.pack(side=tkinter.TOP)
         # TODO Create new window to add entries by hand
         self.window_button= tkinter.Button(self.root, text="Window", command=self.create_window)
-        self.window_button.pack(side=tkinter.TOP)
+        self.window_button.pack(side=tkinter.LEFT)
         # TODO add entry for ROT
-
-        # TODO add entry for x, y
-        self.xcirentry = tkinter.Entry(self.root)
-        self.xcirentry.pack(side=tkinter.LEFT)
-
-        self.ycirentry = tkinter.Entry(self.root)
-        self.ycirentry.pack(side=tkinter.LEFT)
-
-        self.update_cirbutton = tkinter.Button(master=self.root, text="CIR", command=self.CIR)
-        self.update_cirbutton.pack(side=tkinter.LEFT)
 
         self.update_methodbutton = tkinter.Button(master=self.root, text="Update",
                                                   command=self.change_method)
-        self.update_methodbutton.pack(side=tkinter.TOP)
+        self.update_methodbutton.pack(side=tkinter.LEFT)
 
         self.command_button = tkinter.Button(master=self.root, text="Command", command=self.print_command)
-        self.command_button.pack(side=tkinter.TOP)
+        self.command_button.pack(side=tkinter.LEFT)
 
         self.export_button = tkinter.Button(master=self.root, text="Export", command=self.command_txt)
-        self.export_button.pack(side=tkinter.TOP)
+        self.export_button.pack(side=tkinter.LEFT)
 
         self.quit_button = tkinter.Button(master=self.root, text="Quit", command=self._quit)
         self.quit_button.pack(side=tkinter.BOTTOM)
@@ -136,6 +126,13 @@ class Interface():
     def create_window(self):
         self.window = tkinter.Toplevel(self.root)
         tkinter.Label(self.window, text ="CIR").grid(row=0, column=0)
+        self.xcirentry = tkinter.Entry(self.window)
+        self.xcirentry.grid(row=0, column = 1)
+        tkinter.Label(self.window, text =", ").grid(row=0, column=2)
+        self.ycirentry = tkinter.Entry(self.window)
+        self.ycirentry.grid(row=0, column=3)
+        self.update_cirbutton = tkinter.Button(master=self.window, text="CIR", command=self.CIR)
+        self.update_cirbutton.grid(row = 0, column = 4)
 
 
     def get_ang(self, v1, v2, dir=False, direction=(0, 1)):
