@@ -10,6 +10,7 @@ from matplotlib.backends.backend_tkagg import (
 # Implement the default Matplotlib key bindings.
 from matplotlib.backend_bases import key_press_handler
 from matplotlib.figure import Figure
+import tkinter.scrolledtext as tkscrolledtext
 
 import numpy as np
 
@@ -36,10 +37,13 @@ class Interface():
 
         self.setup()
         self.drawing, = self.ax.plot(self.plt_draw[:, 0], self.plt_draw[:, 1])
+        self.rotpoint = np.zeros((1, 2))
+        self.rotdraw, = self.ax.plot(self.plt_draw[:, 0], self.plt_draw[:, 1], 'ro')
 
         self.canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
         self.canvas.mpl_connect("button_press_event", self.on_key_press)
-
+        self.textbox = tkscrolledtext.ScrolledText(master=self.root, wrap='word', height=2)
+        self.textbox.pack(side=tkinter.TOP, fill = 'x',  expand=1)
         self.set_buttons()
 
     def setup(self):
@@ -96,8 +100,23 @@ class Interface():
         self.export_button = tkinter.Button(master=self.root, text="Export", command=self.command_txt)
         self.export_button.pack(side=tkinter.LEFT)
 
+        self.dir_button = tkinter.Button(master=self.root, text="dir", command=self.print_dir)
+        self.dir_button.pack(side=tkinter.LEFT)
+
+        self.dirtest_button = tkinter.Button(master=self.root, text="arrow dir", command=self.test_dir)
+        self.dirtest_button.pack(side=tkinter.LEFT)
+
         self.quit_button = tkinter.Button(master=self.root, text="Quit", command=self._quit)
         self.quit_button.pack(side=tkinter.BOTTOM)
+
+    def print_dir(self):
+        print(self.directions)
+
+    def test_dir(self):
+        xold, yold = self.plt_draw[-1]
+        xdir, ydir = self.directions[-1]
+        self.ax.arrow(xold, yold, xdir, ydir, width=0.5)
+        self.ax.figure.canvas.draw()
 
     def update_method(self):
         """Tempoiraire, c'est pour mettre à jour la méthode de tracé, ici 1 est la ligne droite"""
@@ -112,7 +131,7 @@ class Interface():
         self.directions = np.array([[0, 1]])
         self.drawing.set_data(self.plt_draw[:, 0], self.plt_draw[:, 1])
         self.ax.figure.canvas.draw()
-
+        self.textbox.delete('1.0', tkinter.END)
 
     def change_method(self):
         if self.DRAW_METHOD < 3:
@@ -130,7 +149,8 @@ class Interface():
             self.draw_lineinter(x, y)
         if self.DRAW_METHOD == 2:  # CIR
             self.draw_CIR(10, self.plt_draw[-1][0], self.plt_draw[-1][1], x, y)
-            self.command = np.vstack((self.command, np.array([2, x, y])))
+            # self.command = np.vstack((self.command, np.array([2, x, y])))
+            self.add_command(2, x, y)
         # Update Canvas
         self.drawing.set_data(self.plt_draw[:, 0], self.plt_draw[:, 1])
         self.ax.figure.canvas.draw()
@@ -152,15 +172,63 @@ class Interface():
         return np.arccos(dot_product)
 
     def ROT(self):
+        # Update direction
+        angrad = float(self.thetaentry.get())*np.pi*2/360
+        xdir, ydir = self.directions[-1]
+        new_dir = self.rotatenp(xdir, ydir, angrad)
+        new_dir = np.array([round(new_dir[0],2), round(new_dir[1],2)])
+        print(new_dir)
+        self.directions = np.vstack(
+            (self.directions, new_dir))
+        # Add command
+        self.add_command(0, angrad, 0)
+        # Plot point to show rotation
+        x, y = self.plt_draw[-1]
+        self.rotpoint = np.vstack((self.rotpoint, np.array([x,y])))
+        self.rotdraw.set_data(self.rotpoint[:, 0], self.rotpoint[:, 1])
+        self.ax.figure.canvas.draw()
         return 0
 
+    def rotatenp(self, x, y, ang):
+        """Use numpy to build a rotation matrix and take the dot product."""
+        co, si = np.cos(ang), np.sin(ang)
+        j = np.array([[co, si], [-si, co]])
+        m = np.dot(j, [x, y])
+        return float(m[0]), float(m[1])
+
     def LIN(self):
+        d = float(self.dentry.get())
+        xold, yold = self.plt_draw[-1]
+        print(xold, yold)
+        xdir, ydir = self.directions[-1]
+        if xold==0:
+            xout, yout = xold, yold +d
+            if d>0:
+                xout, yout = xold, yold +d
+            else:
+                xout, yout = xold, yold +d*ydir
+                self.directions = np.vstack(
+                    (self.directions, np.array([-self.directions[-1][0], -self.directions[-1][1]])))
+        else:
+            if d>0:
+                xout = xold +d*xdir
+                yout = yold +d*ydir
+            else:
+                xout = xold +d*xdir
+                yout = yold +d*ydir
+                self.directions = np.vstack(
+                    (self.directions, np.array([-self.directions[-1][0], -self.directions[-1][1]])))
+        self.plt_draw = np.vstack((self.plt_draw, np.array([xout, yout])))
+        self.drawing.set_data(self.plt_draw[:, 0], self.plt_draw[:, 1])
+        self.add_command(1, xout, yout)
+        self.ax.figure.canvas.draw()
         return 0
 
     def CIR(self):
         print(self.plt_draw[-1][0], self.plt_draw[-1][1], self.xcirentry.get(), self.ycirentry.get())
         self.draw_CIR(float(self.rcirentry.get()), self.plt_draw[-1][0], self.plt_draw[-1][1], float(self.xcirentry.get()), float(self.ycirentry.get()))
-        self.command = np.vstack((self.command, np.array([2, self.xcirentry.get(), self.ycirentry.get()])))
+        # self.command = np.vstack((self.command, np.array([2, self.xcirentry.get(), self.ycirentry.get()])))
+        self.add_command(2, self.xcirentry.get(), self.ycirentry.get())
 
     def draw_lineinter(self, x,y):
         dv = x - self.plt_draw[-1][0], y - self.plt_draw[-1][1]
@@ -174,10 +242,19 @@ class Interface():
                   (1, 0)) > 0:  # Essai pour déterminer le signe de l'angle mais infructueux
             angle = -angle
         # Ajout des commandes
-        if angle != 0:  # Ajoute une commande de rotation s'il est non nul
-            self.command = np.vstack((self.command, np.array([0, angle, 0])))  # Rotation
+        if np.abs(angle) > 0.001:  # Ajoute une commande de rotation s'il est non nul
+            # self.command = np.vstack((self.command, np.array([0, angle, 0])))  # Rotation
+            self.add_command(0, angle, 0)
         # self.command = np.vstack((self.command, np.array([1,np.linalg.norm(dv), ]))) # Ligne Droite
-        self.command = np.vstack((self.command, np.array([1, x, y])))
+        # self.command = np.vstack((self.command, np.array([1, x, y])))
+        self.add_command(1, x, y)
+
+
+    def add_command(self, c, i1, i2):
+        self.command = np.vstack((self.command, np.array([c, i1, i2])))
+        command_dict = {0: 'ROT',1:'LIN', 2:'CIR' }
+        c = command_dict[int(self.command[-1][0])]
+        self.textbox.insert('1.0', "{0}({1},{2})\n".format(c, round(self.command[-1][1], 2), round(self.command[-1][2])), 2)
 
     def draw_CIR(self,rin,  xin, yin, xout, yout, ang=np.pi / 2):
         print(xin, yin, xout, yout)
@@ -230,7 +307,7 @@ class Interface():
         self.update_cirbutton.grid(row = 0, column = col)
         colcir = col
         col=0
-        tkinter.Label(self.window, text ="ROT (theta): ").grid(row=1, column=col)
+        tkinter.Label(self.window, text ="ROT° (theta): ").grid(row=1, column=col)
         col+=1
         self.thetaentry = tkinter.Entry(self.window)
         self.thetaentry.grid(row=1, column = col)
