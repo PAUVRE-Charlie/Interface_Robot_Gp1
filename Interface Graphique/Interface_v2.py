@@ -19,7 +19,8 @@ class Interface():
     FIGSIZE = (5, 4)
     DPI = 100
     DRAW_METHOD = 1
-    AXIS = [-5, 5, -5, 5]
+    AXIS = [-10, 10, -10, 10]
+    GRID =True
 
     def __init__(self):
         ## Initialisation de Tkinter
@@ -46,6 +47,9 @@ class Interface():
         self.fig = Figure(figsize=self.FIGSIZE, dpi=self.DPI)
         self.ax = self.fig.add_subplot(111)
         self.ax.axis(self.AXIS)
+
+        self.set_grid()
+
         self.robot_im = plt.imread('robot.png')
         self.imgplot = self.ax.imshow(self.robot_im, origin=(0,1), extent=([-1, 1, 0, 2]))
 
@@ -56,10 +60,28 @@ class Interface():
         self.toolbar = NavigationToolbar2Tk(self.canvas, self.root)
         self.toolbar.update()
 
+    def set_grid(self):
+        if self.GRID:
+            # Major ticks, minor ticks every
+            major_ticks = np.arange(self.AXIS[0], self.AXIS[1], 1)
+            # minor_ticks = np.arange(-10, 11, 0.5)
+
+            self.ax.set_xticks(major_ticks)
+            # self.ax.set_xticks(minor_ticks, minor=True)
+            self.ax.set_yticks(major_ticks)
+            # self.ax.set_yticks(minor_ticks, minor=True)
+
+            # And a corresponding grid
+            self.ax.grid(which='both', alpha=0.2)
+            self.ax.set_axisbelow(True)
+
     def set_buttons(self):
         """Mise en place des boutons sur Tkinter"""
         # self.method_entry = tkinter.Entry(self.root)
         # self.method_entry.pack(side=tkinter.TOP)
+        # TODO Create new window to add entries by hand
+        self.window_button= tkinter.Button(self.root, text="Window", command=self.create_window)
+        self.window_button.pack(side=tkinter.TOP)
         # TODO add entry for ROT
 
         # TODO add entry for x, y
@@ -103,27 +125,18 @@ class Interface():
         if event.inaxes != self.ax.axes: return
         x, y = event.xdata, event.ydata
         if self.DRAW_METHOD == 1:  # Ligne droite
-            dv = x - self.plt_draw[-1][0], y - self.plt_draw[-1][1]
-            angle = self.get_ang(self.plt_draw[-1], np.array([x, y]), dir=True,
-                                 direction=self.directions[-1])  # Détermination de l'angle de rotation (valeur absolue)
-            self.directions = np.vstack(
-                (self.directions, np.array(dv / np.linalg.norm(dv))))  # Mise à jour des directions deu robot
-            # Ajout des coordonnées du click
-            self.plt_draw = np.vstack((self.plt_draw, np.array([x, y])))
-            if np.dot((self.directions[-1][0], 0),
-                      (1, 0)) > 0:  # Essai pour déterminer le signe de l'angle mais infructueux
-                angle = -angle
-            # Ajout des commandes
-            if angle != 0:  # Ajoute une commande de rotation s'il est non nul
-                self.command = np.vstack((self.command, np.array([0, angle, 0])))  # Rotation
-            # self.command = np.vstack((self.command, np.array([1,np.linalg.norm(dv), ]))) # Ligne Droite
-            self.command = np.vstack((self.command, np.array([1, x, y])))
+            self.draw_lineinter(x, y)
         if self.DRAW_METHOD == 2:  # CIR
             self.draw_CIR(self.plt_draw[-1][0], self.plt_draw[-1][1], x, y)
             self.command = np.vstack((self.command, np.array([2, x, y])))
         # Update Canvas
         self.drawing.set_data(self.plt_draw[:, 0], self.plt_draw[:, 1])
         self.ax.figure.canvas.draw()
+
+    def create_window(self):
+        self.window = tkinter.Toplevel(self.root)
+        tkinter.Label(self.window, text ="CIR").grid(row=0, column=0)
+
 
     def get_ang(self, v1, v2, dir=False, direction=(0, 1)):
         """Détermine l'angle de rotation avec considération possible de la direction précédante"""
@@ -140,6 +153,23 @@ class Interface():
         print(self.plt_draw[-1][0], self.plt_draw[-1][1], self.xcirentry.get(), self.ycirentry.get())
         self.draw_CIR(self.plt_draw[-1][0], self.plt_draw[-1][1], self.xcirentry.get(), self.ycirentry.get())
         self.command = np.vstack((self.command, np.array([2, self.xcirentry.get(), self.ycirentry.get()])))
+
+    def draw_lineinter(self, x,y):
+        dv = x - self.plt_draw[-1][0], y - self.plt_draw[-1][1]
+        angle = self.get_ang(self.plt_draw[-1], np.array([x, y]), dir=True,
+                             direction=self.directions[-1])  # Détermination de l'angle de rotation (valeur absolue)
+        self.directions = np.vstack(
+            (self.directions, np.array(dv / np.linalg.norm(dv))))  # Mise à jour des directions deu robot
+        # Ajout des coordonnées du click
+        self.plt_draw = np.vstack((self.plt_draw, np.array([x, y])))
+        if np.dot((self.directions[-1][0], 0),
+                  (1, 0)) > 0:  # Essai pour déterminer le signe de l'angle mais infructueux
+            angle = -angle
+        # Ajout des commandes
+        if angle != 0:  # Ajoute une commande de rotation s'il est non nul
+            self.command = np.vstack((self.command, np.array([0, angle, 0])))  # Rotation
+        # self.command = np.vstack((self.command, np.array([1,np.linalg.norm(dv), ]))) # Ligne Droite
+        self.command = np.vstack((self.command, np.array([1, x, y])))
 
     def draw_CIR(self, xin, yin, xout, yout, ang=np.pi / 2):
         print(xin, yin, xout, yout)
