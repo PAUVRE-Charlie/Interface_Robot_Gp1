@@ -11,8 +11,7 @@ from matplotlib.backends.backend_tkagg import (
 from matplotlib.backend_bases import key_press_handler
 from matplotlib.figure import Figure
 import tkinter.scrolledtext as tkscrolledtext
-
-import numpy as np
+from circlefrompt import circ
 
 
 class Interface():
@@ -152,7 +151,7 @@ class Interface():
         if self.DRAW_METHOD == 1:  # Ligne droite
             self.draw_lineinter(x, y)
         if self.DRAW_METHOD == 2:  # CIR
-            self.draw_CIR(x, y)
+            self.draw_CIR2(x, y)
         # Update Canvas
         self.drawing.set_data(self.plt_draw[:, 0], self.plt_draw[:, 1])
         self.ax.figure.canvas.draw()
@@ -308,6 +307,29 @@ class Interface():
             self.drawing.set_data(self.plt_draw[:, 0], self.plt_draw[:, 1])
             self.ax.figure.canvas.draw()
             self.add_command(2, xout, yout)
+
+    def draw_CIR2(self, xout, yout):
+        xin, yin = self.plt_draw[-1][0], self.plt_draw[-1][1]
+        if(yout==0 or xout==0):
+            print("Configuration impossible pour CIR")
+        else:
+            dx, dy = xout-xin, yout-yin
+            theta_ini = self.get_ang((0,1),(0,1))
+            Xcv = dy*np.sin(theta_ini)+dx*np.cos(theta_ini)
+            Ycv = dy*np.cos(theta_ini)-dx*np.sin(theta_ini)
+            sgn = (Xcv/np.abs(Xcv))
+            R = sgn*(Xcv**2+Ycv**2)/(2*Xcv)
+            circle = plt.Circle((sgn*R,0), R, alpha=0.1)
+            c1 = circles_from_p1p2r((xin,yin),(xout,yout),R)
+            print(c1)
+            c11, c12 =c1
+            print((c11.x,c11.y), c11.r)
+            circle1 = plt.Circle((c11.x,c11.y), c11.r, alpha=0.1)
+            self.ax.add_artist(circle1)
+            circle2 = plt.Circle((c12.x,c12.y), c12.r, alpha=0.1, color='g')
+            self.ax.add_artist(circle2)
+            self.ax.plot(xin, yin, 'ro', color='g')
+        return 0
 
     def print_command(self):
         """Imprime les commandes sur la console"""
