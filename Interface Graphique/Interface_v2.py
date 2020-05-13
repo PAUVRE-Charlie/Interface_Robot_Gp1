@@ -28,17 +28,9 @@ class Interface():
         self.root = tkinter.Tk()
         self.root.wm_title("Interface Commande Robot")
 
-        # Variables
-        self.plt_draw = np.zeros((1, 2))  # Coordonnées interprété par matplotlib pour le tracé
-        self.plt_draw[0] = np.array([0, 1])
-        self.command = np.zeros((1, 3))
-        self.command[0] = np.array([1, 0, 1])
-        self.directions = np.array([[0, 1]])
-
         self.setup()
-        self.drawing, = self.ax.plot(self.plt_draw[:, 0], self.plt_draw[:, 1])
-        self.rotpoint = np.zeros((1, 2))
-        self.rotdraw, = self.ax.plot(self.plt_draw[:, 0], self.plt_draw[:, 1], 'ro')
+        # Variables
+        self.init_graph()
 
         self.canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
         self.canvas.mpl_connect("button_press_event", self.on_key_press)
@@ -55,7 +47,7 @@ class Interface():
         self.set_grid()
 
         self.robot_im = plt.imread('robot.png')
-        self.imgplot = self.ax.imshow(self.robot_im, origin=(0,1), extent=([-1, 1, 0, 2]))
+        self.imgplot = self.ax.imshow(self.robot_im, origin=(0,0), extent=([-1, 1, -1, 1]))
 
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.root)  # A tk.DrawingArea.
         self.canvas.draw()
@@ -86,9 +78,13 @@ class Interface():
         self.window_button= tkinter.Button(self.root, text="Command Window", command=self.create_window)
         self.window_button.pack(side=tkinter.LEFT)
 
-        self.update_methodbutton = tkinter.Button(master=self.root, text="Update",
-                                                  command=self.change_method)
-        self.update_methodbutton.pack(side=tkinter.LEFT)
+        self.update_linmethodbutton = tkinter.Button(master=self.root, text="Line",
+                                                  command=self.to_Line, relief= tkinter.SUNKEN)
+        self.update_linmethodbutton.pack(side=tkinter.LEFT)
+
+        self.update_cirmethodbutton = tkinter.Button(master=self.root, text="CIR",
+                                                  command=self.to_CIR)
+        self.update_cirmethodbutton.pack(side=tkinter.LEFT)
 
         self.erase_methodbutton = tkinter.Button(master=self.root, text="Erase",
                                                   command=self.erase_plt)
@@ -109,6 +105,14 @@ class Interface():
         self.quit_button = tkinter.Button(master=self.root, text="Quit", command=self._quit)
         self.quit_button.pack(side=tkinter.BOTTOM)
 
+    def init_graph(self):
+        self.plt_draw = np.zeros((1, 2))  # Coordonnées interprété par matplotlib pour le tracé
+        # self.plt_draw[0] = np.array([0, 1])
+        self.command = np.zeros((1, 3))
+        # self.command[0] = np.array([1, 0, 1])
+        self.directions = np.array([[0, 1]])
+        self.drawing, = self.ax.plot(self.plt_draw[:, 0], self.plt_draw[:, 1])
+
     def print_dir(self):
         print(self.directions)
 
@@ -118,26 +122,25 @@ class Interface():
         self.ax.arrow(xold, yold, xdir, ydir, width=0.5)
         self.ax.figure.canvas.draw()
 
-    def update_method(self):
-        """Tempoiraire, c'est pour mettre à jour la méthode de tracé, ici 1 est la ligne droite"""
-        self.DRAW_METHOD = 10
-        print(self.DRAW_METHOD)
+    def to_CIR(self):
+        self.update_cirmethodbutton.config(relief=tkinter.SUNKEN)
+        self.update_linmethodbutton.configure(relief = tkinter.RAISED)
+        self.DRAW_METHOD=2
 
     def erase_plt(self):
-        self.plt_draw = np.zeros((1, 2))  # Coordonnées interprété par matplotlib pour le tracé
-        self.plt_draw[0] = np.array([0, 1])
-        self.command = np.zeros((1, 3))
-        self.command[0] = np.array([1, 0, 1])
-        self.directions = np.array([[0, 1]])
-        self.drawing.set_data(self.plt_draw[:, 0], self.plt_draw[:, 1])
-        self.ax.figure.canvas.draw()
+        self.ax.cla()
+        self.init_graph()
         self.textbox.delete('1.0', tkinter.END)
+        self.ax.axis(self.AXIS)
+        self.set_grid()
+        self.robot_im = plt.imread('robot.png')
+        self.imgplot = self.ax.imshow(self.robot_im, origin=(0,1), extent=([-1, 1, -1, 1]))
+        self.ax.figure.canvas.draw()
 
-    def change_method(self):
-        if self.DRAW_METHOD < 3:
-            self.DRAW_METHOD += 1
-        else:
-            self.DRAW_METHOD=1
+    def to_Line(self):
+        self.update_linmethodbutton.config(relief=tkinter.SUNKEN)
+        self.update_cirmethodbutton.configure(relief = tkinter.RAISED)
+        self.DRAW_METHOD=1
 
     def on_key_press(self, event):
         """Gestion de l'évènement clic gauche et gestion du tracé"""
@@ -145,12 +148,11 @@ class Interface():
         key_press_handler(event, self.canvas, self.toolbar)
         if event.inaxes != self.ax.axes: return
         x, y = event.xdata, event.ydata
+        if np.abs(x)>10 or np.abs(y)>10: return
         if self.DRAW_METHOD == 1:  # Ligne droite
             self.draw_lineinter(x, y)
         if self.DRAW_METHOD == 2:  # CIR
-            self.draw_CIR(10, self.plt_draw[-1][0], self.plt_draw[-1][1], x, y)
-            # self.command = np.vstack((self.command, np.array([2, x, y])))
-            self.add_command(2, x, y)
+            self.draw_CIR(x, y)
         # Update Canvas
         self.drawing.set_data(self.plt_draw[:, 0], self.plt_draw[:, 1])
         self.ax.figure.canvas.draw()
@@ -184,8 +186,7 @@ class Interface():
         self.add_command(0, angrad, 0)
         # Plot point to show rotation
         x, y = self.plt_draw[-1]
-        self.rotpoint = np.vstack((self.rotpoint, np.array([x,y])))
-        self.rotdraw.set_data(self.rotpoint[:, 0], self.rotpoint[:, 1])
+        self.ax.plot(x,y,'ro')
         self.ax.figure.canvas.draw()
         return 0
 
@@ -226,7 +227,7 @@ class Interface():
 
     def CIR(self):
         print(self.plt_draw[-1][0], self.plt_draw[-1][1], self.xcirentry.get(), self.ycirentry.get())
-        self.draw_CIR(float(self.rcirentry.get()), self.plt_draw[-1][0], self.plt_draw[-1][1], float(self.xcirentry.get()), float(self.ycirentry.get()))
+        self.draw_CIR(float(self.xcirentry.get()), float(self.ycirentry.get()))
         # self.command = np.vstack((self.command, np.array([2, self.xcirentry.get(), self.ycirentry.get()])))
         self.add_command(2, self.xcirentry.get(), self.ycirentry.get())
 
@@ -256,21 +257,66 @@ class Interface():
         c = command_dict[int(self.command[-1][0])]
         self.textbox.insert('1.0', "{0}({1},{2})\n".format(c, round(self.command[-1][1], 2), round(self.command[-1][2])), 2)
 
-    def draw_CIR(self,rin,  xin, yin, xout, yout, ang=np.pi / 2):
-        print(xin, yin, xout, yout)
-        # r = np.abs(yin - rin)
-        X = np.linspace(xin, xout, 1000)
-        Y = yin-rin + np.sqrt(rin ** 2 - (X - xin) ** 2)
-        for k in range(len(X)):
-            if isinstance(X[k], float) and isinstance(Y[k], float):
-                self.plt_draw = np.vstack((self.plt_draw, np.array([X[k], Y[k]])))
-        self.plt_draw = np.vstack((self.plt_draw, np.array([xout, yout])))
-        self.drawing.set_data(self.plt_draw[:, 0], self.plt_draw[:, 1])
-        self.ax.figure.canvas.draw()
+    def draw_CIR(self, xout, yout):
+        xin, yin = self.plt_draw[-1][0], self.plt_draw[-1][1]
+        print("(xin={0}, yin={1})".format(xin,yin))
+        ang = self.get_ang(self.directions[-1], np.array([0, 1]), dir=True,
+                          direction=self.directions[-1])
+        print(ang)
+        self.ax.plot([0,xin],[0,yin], color='g')
+        self.ax.plot([0,xout],[0,yout], color='r')
+        self.ax.plot([xin,xout],[yin,yout], color='b')
+        dx, dy = xout-xin, yout-yin
+        self.ax.plot([0,dx],[0,dy])
+        xrel, yrel = self.rotatenp(dx, dy, -ang)
+        # yrel,xrel = xrel,yrel
+        self.ax.plot([0,xrel],[0,yrel], color='k')
+        print(xrel, yrel)
+        if(yrel==0 or xrel==0 or (yrel)<0):
+            print("Configuration impossible pour CIR")
+        else:
+            # dx, dy = -dx,-dy
+            theta_ini = self.get_ang((0,1),(0,1))
+            Xcv = dy*np.sin(theta_ini)+dx*np.cos(theta_ini)
+            Ycv = dy*np.cos(theta_ini)-dx*np.sin(theta_ini)
+            sgn = (Xcv/np.abs(Xcv))
+            R = sgn*(Xcv**2+Ycv**2)/(2*Xcv)
+            X = np.linspace(0, xout, 100)
+            Y = np.sqrt(R**2-np.power(X-sgn*R,2))
+            dir_2 = self.directions[-1]
+            dir_2 = dir_2 / np.linalg.norm(dir_2)
+            theta = self.get_ang((0,1),dir_2)
+            Xn, Yn, Vn = list(),list(), list()
+            Vn2=np.zeros((1,2))
+            Vn2[0] = np.array([xin,yin])
+            for k in range (len(X)):
+                xr, yr = self.rotatenp(X[k], Y[k],theta)
+                Xn.append(xr)
+                Yn.append(yr)
+                Vn.append([xr+xin,yr+yin])
+            for k in range (len(X)):
+                xr, yr = self.rotatenp(X[k], Y[k],theta)
+                Vn2=np.vstack((Vn,np.array([X[k],yr+Vn2[-1][-1]])))
+            self.ax.plot(Vn2[:,0], Vn2[:,1])
+            Xn, Yn = np.array(Xn)+xin, np.array(Yn)+yin
+            # self.ax.plot(Xn, Yn)
+            dv_dir = (X[-1]-X[-2], Y[-1]-Y[-2])
+            dv_dir = dv_dir / np.linalg.norm(dv_dir)
+            self.directions = np.vstack(
+                (self.directions, dv_dir))  # Mise à jour des directions deu robot
+            self.plt_draw = np.vstack((self.plt_draw, np.array(Vn)))
+            self.drawing.set_data(self.plt_draw[:, 0], self.plt_draw[:, 1])
+            self.ax.figure.canvas.draw()
+            self.add_command(2, xout, yout)
 
     def print_command(self):
         """Imprime les commandes sur la console"""
         print(self.command)
+        print(self.plt_draw)
+        xin, yin = self.plt_draw[-1][0], self.plt_draw[-1][1]
+        # yin = self.plt_draw[:,-1][1]
+        test = self.plt_draw[-1]
+        print("(xin={0}, yin={1}), {2}".format(xin,yin, test))
 
     def command_txt(self):
         path = os.getcwd()
@@ -288,12 +334,7 @@ class Interface():
 
     def set_windowbutton(self):
         col=0
-        tkinter.Label(self.window, text ="CIR (r, x, y): ").grid(row=0, column=col)
-        col+=1
-        self.rcirentry = tkinter.Entry(self.window)
-        self.rcirentry.grid(row=0, column = col)
-        col+=1
-        tkinter.Label(self.window, text =", ").grid(row=0, column=col)
+        tkinter.Label(self.window, text ="CIR (x, y): ").grid(row=0, column=col)
         col+=1
         self.xcirentry = tkinter.Entry(self.window)
         self.xcirentry.grid(row=0, column = col)
