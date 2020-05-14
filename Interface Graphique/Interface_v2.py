@@ -18,9 +18,9 @@ class Interface():
     # VARIABLES
     FIGSIZE = (5, 4)
     DPI = 100
-    DRAW_METHOD = 1
-    AXIS = [-10, 10, -10, 10]
-    GRID = True
+    DRAW_METHOD = 1 #Permet à l'interface de choisir entre les méthodes de tracé (LIN,CIR)
+    AXIS = [-10, 10, -10, 10] #Définit l'espace de travail du robot
+    GRID = True # Définit la présence ou non de la grille
 
     def __init__(self):
         ## Initialisation de Tkinter
@@ -56,6 +56,7 @@ class Interface():
         self.toolbar.update()
 
     def set_grid(self):
+        """Mise en place de la grille"""
         if self.GRID:
             # Major ticks, minor ticks every
             major_ticks = np.arange(self.AXIS[0], self.AXIS[1], 1)
@@ -108,6 +109,7 @@ class Interface():
         self.quit_button.pack(side=tkinter.BOTTOM)
 
     def init_graph(self):
+        """Initialise la courbe de la trajectoire, ainsi que les commandes et les directions"""
         self.plt_draw = np.zeros((1, 2))  # Coordonnées interprété par matplotlib pour le tracé
         # self.plt_draw[0] = np.array([0, 1])
         self.command = np.zeros((1, 3))
@@ -116,12 +118,15 @@ class Interface():
         self.drawing, = self.ax.plot(self.plt_draw[:, 0], self.plt_draw[:, 1])
 
     def pos_meth(self):
+        """Met en place la méthode Position"""
         self.DRAW_METHOD = 3
 
     def print_dir(self):
+        """Affiche la liste des directions sur l'invité de commande"""
         print(self.directions)
 
     def test_dir(self):
+        """Affiche une flèche pour symboliser la direction de la voiture, ainsi que la normale"""
         xold, yold = self.plt_draw[-1]
         xdir, ydir = self.directions[-1]
         self.ax.arrow(xold, yold, xdir, ydir, width=0.2)
@@ -129,11 +134,13 @@ class Interface():
         self.ax.figure.canvas.draw()
 
     def to_CIR(self):
+        """Change la méthode de tracé au CIR"""
         self.update_cirmethodbutton.config(relief=tkinter.SUNKEN)
         self.update_linmethodbutton.configure(relief=tkinter.RAISED)
         self.DRAW_METHOD = 2
 
     def erase_plt(self):
+        """Réinitialise le tracé"""
         self.ax.cla()
         self.init_graph()
         self.textbox.delete('1.0', tkinter.END)
@@ -144,6 +151,7 @@ class Interface():
         self.ax.figure.canvas.draw()
 
     def to_Line(self):
+        """Change la méthode de tracé au LIN"""
         self.update_linmethodbutton.config(relief=tkinter.SUNKEN)
         self.update_cirmethodbutton.configure(relief=tkinter.RAISED)
         self.DRAW_METHOD = 1
@@ -166,10 +174,12 @@ class Interface():
         self.ax.figure.canvas.draw()
 
     def create_window(self):
+        """Affiche l'invité de commande LIN,CIR,ROT"""
         self.window = tkinter.Toplevel(self.root)
         self.set_windowbutton()
 
     def test_pos(self, x, y):
+        """Signalise sur l'invité de commande si on clique à gauche ou droite de la voiture"""
         xdir, ydir = self.directions[-1][0], self.directions[-1][1]
         xold, yold = self.plt_draw[-1]
         print(np.dot([-ydir, xdir], [x - xold, y - yold]))
@@ -190,6 +200,7 @@ class Interface():
         return np.arccos(dot_product)
 
     def ROT(self):
+        """Méthode de Rotation de la voiture"""
         # Update direction
         angrad = float(self.thetaentry.get()) * np.pi * 2 / 360
         xdir, ydir = self.directions[-1]
@@ -212,6 +223,7 @@ class Interface():
         return float(m[0]), float(m[1])
 
     def LIN(self):
+        """Méthode de ligne droite de la voiture"""
         d = float(self.dentry.get())
         xold, yold = self.plt_draw[-1]
         xdir, ydir = self.directions[-1]
@@ -230,12 +242,14 @@ class Interface():
         return 0
 
     def CIR(self):
+        """Méthode tracé d'arc de la voiture"""
         print(self.plt_draw[-1][0], self.plt_draw[-1][1], self.xcirentry.get(), self.ycirentry.get())
         self.draw_CIR(float(self.xcirentry.get()), float(self.ycirentry.get()))
         # self.command = np.vstack((self.command, np.array([2, self.xcirentry.get(), self.ycirentry.get()])))
         self.add_command(2, self.xcirentry.get(), self.ycirentry.get())
 
     def draw_lineinter(self, x, y):
+        """Trace le LIN de la voiture"""
         dv = x - self.plt_draw[-1][0], y - self.plt_draw[-1][1]
         angle = self.get_ang(self.plt_draw[-1], np.array([x, y]), dir=True,
                              direction=self.directions[-1])  # Détermination de l'angle de rotation (valeur absolue)
@@ -251,6 +265,7 @@ class Interface():
         self.add_command(1, x, y)
 
     def add_command(self, c, i1, i2):
+        """Met à jour la liste de commandes"""
         self.command = np.vstack((self.command, np.array([c, i1, i2])))
         command_dict = {0: 'ROT', 1: 'LIN', 2: 'CIR'}
         c = command_dict[int(self.command[-1][0])]
@@ -258,9 +273,11 @@ class Interface():
                             "{0}({1},{2})\n".format(c, round(self.command[-1][1], 2), round(self.command[-1][2])), 2)
 
     def add_direction(self, dv):
+        """Met à jour la liste de directions"""
         self.directions = np.vstack((self.directions, dv / np.linalg.norm(dv)))
 
     def init_arc(self, xout, yout):
+        """Crée un arc dans la base de la voiture"""
         xin, yin = self.plt_draw[-1][0], self.plt_draw[-1][1]
         ### Calcul dans le cas (x0,y0)=(0,0) et direction = (0,1)
         dx, dy = xout - xin, yout - yin
@@ -276,6 +293,7 @@ class Interface():
         return Xcv, Ycv, sgn, X, Y
 
     def draw_CIR(self, xout, yout):
+        """Trace le CIR"""
         xin, yin = self.plt_draw[-1][0], self.plt_draw[-1][1]
         Xcv, Ycv, sgn, X, Y = self.init_arc(xout, yout)
 
@@ -298,6 +316,7 @@ class Interface():
         self.add_command(2, xout, yout)
 
     def draw_CIR2(self, xout, yout):
+        """Trace le CIR, méthode 2"""
         xin, yin = self.plt_draw[-1][0], self.plt_draw[-1][1]
         xdir, ydir = self.directions[-1]
         gauche = np.dot([-ydir, xdir], [xout - xin, yout - yin]) / np.abs(
@@ -390,6 +409,7 @@ class Interface():
         return 0
 
     def length(self, data1, data2):
+        """calcule la longueur de la trajectoire"""
         l = 0
         for k in range(1, len(data2)):
             delta = data1[k] - data1[k - 1], data2[k] - data2[k - 1]
@@ -397,6 +417,7 @@ class Interface():
         return l
 
     def changement_base(self, xrel, yrel, theta, x0, y0):
+        """Change la base (rotation, translation)"""
         chg_base = np.array([[np.cos(theta), -np.sin(theta), x0],
                              [np.cos(theta), np.sin(theta), y0]])
         j = np.array([[xrel],
@@ -410,6 +431,7 @@ class Interface():
         print(self.command)
 
     def command_txt(self):
+        """Renvoie les commande sous forme de fichier texte, la suite du programme est géré par la partie Trajectoire"""
         path = os.getcwd()
         text_data = open(path + "\\trajectoire.txt", "w")
         for instruct in self.command:
@@ -419,11 +441,13 @@ class Interface():
         return 0
 
     def _quit(self):
+        """Quitte l'interface"""
         self.root.quit()  # stops mainloop
         self.root.destroy()  # this is necessary on Windows to prevent
         # Fatal Python Error: PyEval_RestoreThread: NULL tstate
 
     def set_windowbutton(self):
+        """Met en place la fenetre de commande"""
         col = 0
         tkinter.Label(self.window, text="CIR (x, y): ").grid(row=0, column=col)
         col += 1
