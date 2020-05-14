@@ -200,7 +200,7 @@ class Interface():
         self.add_command(0, angrad, 0)
         # Plot point to show rotation
         x, y = self.plt_draw[-1]
-        self.ax.plot(x, y, 'ro')
+        self.ax.plot(x, y, 'ro', alpha=0.5)
         self.ax.figure.canvas.draw()
         return 0
 
@@ -214,23 +214,15 @@ class Interface():
     def LIN(self):
         d = float(self.dentry.get())
         xold, yold = self.plt_draw[-1]
-        print(xold, yold)
         xdir, ydir = self.directions[-1]
-        if xold == 0:
-            xout, yout = xold, yold + d
-            if d > 0:
-                xout, yout = xold, yold + d
-            else:
-                xout, yout = xold, yold + d * ydir
-                self.add_direction(np.array([-self.directions[-1][0], -self.directions[-1][1]]))
+        print("(xold = {0}, yold = {1}, xdir = {2}, ydir = {3}".format(xold, yold, xdir, ydir))
+        if d > 0:
+            xout = xold + d * xdir
+            yout = yold + d * ydir
         else:
-            if d > 0:
-                xout = xold + d * xdir
-                yout = yold + d * ydir
-            else:
-                xout = xold + d * xdir
-                yout = yold + d * ydir
-                self.add_direction(np.array([-self.directions[-1][0], -self.directions[-1][1]]))
+            xout = xold + d * xdir
+            yout = yold + d * ydir
+            self.add_direction(np.array([-self.directions[-1][0], -self.directions[-1][1]]))
         self.plt_draw = np.vstack((self.plt_draw, np.array([xout, yout])))
         self.drawing.set_data(self.plt_draw[:, 0], self.plt_draw[:, 1])
         self.add_command(1, xout, yout)
